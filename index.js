@@ -4,6 +4,7 @@ import {
     GetMessageRequest,
     GetLinksRequest,
     DeleteInboxMessagesRequest,
+    DeleteMessageRequest,
 } from 'mailinator-client';
 
 import dotenv from 'dotenv';
@@ -29,7 +30,7 @@ const getInbox = async (domain) => {
 };
 
 // Example usage
-// getInbox(process.env.DOMAIN);
+getInbox(process.env.DOMAIN);
 
 /**
  * Fetches and logs a specific message from a Mailinator client request.
@@ -102,3 +103,26 @@ const deleteInboxMessages = async (domain, inbox) => {
 
 // Example usage
 deleteInboxMessages(process.env.DOMAIN, process.env.INBOX);
+
+/**
+ * Deletes a specific message from a Mailinator inbox.
+ * @param {string} domain The domain name.
+ * @param {string} inbox The name of the inbox.
+ * @param {string} messageId The ID of the message to be deleted.
+ */
+const deleteMessage = async (domain, inbox, messageId) => {
+    try {
+        const response = await mailinatorClient.request(
+            new DeleteMessageRequest(domain, inbox, messageId)
+        );
+
+        // Assuming you want to do something with the response
+        const { count } = response.result ?? {};
+        console.log(`Deleted messages count: ${count}`);
+    } catch (error) {
+        console.error('Error:', error.message || error);
+    }
+};
+
+// Example usage
+deleteMessage(process.env.DOMAIN, process.env.INBOX, process.env.MESSAGE_ID);
