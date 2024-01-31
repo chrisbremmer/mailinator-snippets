@@ -25,109 +25,110 @@ MESSAGE_ID=your_mailinator_message_id
 
 ## Examples
 
+The `MailinatorService` class encapsulates the functionality to interact with Mailinator API. Below are the usage examples:
+
 ### Fetch Inbox
 
 Fetches and logs the inbox from a specific Mailinator domain.
 
-```javascript
-const getInbox = async (domain) => {
-    try {
-        const response = await mailinatorClient.request(
-            new GetInboxRequest(domain)
-        );
+```typescript
+import { MailinatorClient, GetInboxRequest } from 'mailinator-client';
 
-        // Process the response as needed
-        console.log('Inbox:', response.result);
-    } catch (error) {
-        console.error('Error:', error.message || error);
+class MailinatorService {
+    private client: MailinatorClient;
+
+    constructor(apiKey: string) {
+        this.client = new MailinatorClient(apiKey);
     }
-};
+
+    async getInbox(domain: string): Promise<string | null> {
+        try {
+            const response = await this.client.request(
+                new GetInboxRequest(domain)
+            );
+            console.log('Inbox:', response.result?.msgs[0].id);
+            return response.result?.msgs[0].id;
+        } catch (error) {
+            console.error('Error:', error.message || error);
+            return null;
+        }
+    }
+}
 ```
 
 ### Fetch Message
 
 Fetches and logs a specific message from a Mailinator inbox.
 
-```javascript
-const getMessage = async (domain, inbox, messageId) => {
+```typescript
+import { GetMessageRequest } from 'mailinator-client';
+
+async getMessage(domain: string, inbox: string, messageId: string): Promise<string | null> {
     try {
-        const response = await mailinatorClient.request(
-            new GetMessageRequest(domain, inbox, messageId)
-        );
-
-        const { subject, parts, headers } = response.result ?? {};
-
-        console.log('Subject:', subject);
-        // Process parts and headers as needed
+        const response = await this.client.request(new GetMessageRequest(domain, inbox, messageId));
+        const body = response.result?.parts?.[0]?.body ?? '';
+        console.log('Message Body:', body);
+        return body;
     } catch (error) {
         console.error('Error:', error.message || error);
+        return null;
     }
-};
+}
 ```
 
 ### Fetch Links from a Message
 
 Retrieves and logs links from a specific message in a Mailinator inbox.
 
-```javascript
-const getLinks = async (domain, inbox, messageId) => {
+```typescript
+import { GetLinksRequest } from 'mailinator-client';
+
+async getLinks(domain: string, inbox: string, messageId: string): Promise<any> {
     try {
-        const response = await mailinatorClient.request(
-            new GetLinksRequest(domain, inbox, messageId)
-        );
-
-        // Use nullish coalescing for default empty array
+        const response = await this.client.request(new GetLinksRequest(domain, inbox, messageId));
         const links = response.result?.links ?? [];
-
-        links.forEach((link) => {
-            console.log(link);
-        });
+        console.log('Links:', links);
+        return links;
     } catch (error) {
         console.error('Error:', error.message || error);
     }
-};
+}
 ```
 
 ### Delete Inbox Messages
 
 Deletes all messages in a specified Mailinator inbox.
 
-```javascript
-const deleteInboxMessages = async (domain, inbox) => {
-    try {
-        const response = await mailinatorClient.request(
-            new DeleteInboxMessagesRequest(domain, inbox)
-        );
+```typescript
+import { DeleteInboxMessagesRequest } from 'mailinator-client';
 
-        // Assuming you want to do something with the count of deleted messages
-        const { count } = response.result ?? {};
-        console.log(`Deleted messages count: ${count}`);
+async deleteInboxMessages(domain: string, inbox: string) {
+    try {
+        const response = await this.client.request(new DeleteInboxMessagesRequest(domain, inbox));
+        console.log(`Deleted messages count: ${response.result?.count}`);
     } catch (error) {
         console.error('Error:', error.message || error);
     }
-};
+}
 ```
 
 ### Delete a Specific Message
 
 Deletes a specific message from a Mailinator inbox.
 
-```javascript
-const deleteMessage = async (domain, inbox, messageId) => {
-    try {
-        const response = await mailinatorClient.request(
-            new DeleteMessageRequest(domain, inbox, messageId)
-        );
+```typescript
+import { DeleteMessageRequest } from 'mailinator-client';
 
-        // Assuming you want to do something with the response
-        const { count } = response.result ?? {};
-        console.log(`Deleted messages count: ${count}`);
+async deleteMessage(domain: string, inbox: string, messageId: string) {
+    try {
+        const response = await this.client.request(new DeleteMessageRequest(domain, inbox, messageId));
+        console.log(`Deleted message: ${response.result?.count}`);
     } catch (error) {
         console.error('Error:', error.message || error);
     }
-};
+}
 ```
 
 ## Usage
 
-To use these functions, simply call them with the appropriate parameters as shown in the example usage comments in each function.
+To use these functions, instantiate the `MailinatorService` class with your API key, and call the methods with the appropriate parameters.
